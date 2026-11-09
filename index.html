@@ -71,7 +71,7 @@
   .empty{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:28px;text-align:center;color:var(--muted)}
 
   /* summary */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:18px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
   .stat b{display:block;font-family:Fraunces,Georgia,serif;font-size:28px;color:var(--navy)}
   .stat span{font-size:13px;color:var(--muted)}
@@ -80,6 +80,20 @@
   th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
   thead th{background:#fbfaf6;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);position:sticky;top:0}
   th.ev{min-width:190px}
+  /* horizontal-scroll cues */
+  .scroll-hint{display:none;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--navy);background:var(--gold-soft);border:1px solid #ead9a6;border-radius:10px;padding:8px 12px;margin-bottom:8px}
+  .scroll-hint .arrow{display:inline-block;animation:nudge 1.2s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+  .scroll-box{margin-bottom:22px}
+  .scroll-box .table-wrap{margin-bottom:0}
+  .fade-wrap{position:relative}
+  .fade-wrap::after{content:"";position:absolute;top:1px;right:1px;bottom:1px;width:44px;pointer-events:none;border-radius:0 var(--radius) var(--radius) 0;background:linear-gradient(to right,rgba(255,255,255,0),rgba(12,35,64,.18));opacity:0;transition:opacity .2s}
+  .scroll-box.more-right .fade-wrap::after{opacity:1}
+  .scroll-box.can-scroll .scroll-hint{display:flex}
+  /* keep the event column pinned while scrolling sideways */
+  #summaryTable th:first-child,#summaryTable td:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 var(--line)}
+  #summaryTable thead th:first-child{background:#fbfaf6;z-index:2}
+  @media (max-width:600px){th.ev{min-width:150px}}
   td.cell{text-align:center;white-space:nowrap}
   .pill{display:inline-block;min-width:30px;padding:2px 8px;border-radius:999px;font-weight:600;font-size:13px}
   .pill.yes{background:var(--yes-bg);color:var(--yes)} .pill.no{background:var(--no-bg);color:var(--no)} .pill.maybe{background:var(--maybe-bg);color:var(--maybe)} .pill.none{color:#aab2bd}
@@ -143,7 +157,10 @@
   <!-- SUMMARY VIEW -->
   <section id="view-summary" hidden>
     <div class="stats" id="stats"></div>
-    <div class="table-wrap"><table id="summaryTable"></table></div>
+    <div class="scroll-box" id="scrollBox">
+      <div class="scroll-hint" id="scrollHint">Swipe sideways to see everyone <span class="arrow">→</span></div>
+      <div class="fade-wrap"><div class="table-wrap" id="tableWrap"><table id="summaryTable"></table></div></div>
+    </div>
     <div class="comments" id="commentsList"></div>
     <button class="btn ghost" id="copyBtn">Copy summary as text</button>
     <span class="save-state" id="copyState"></span>
@@ -383,7 +400,17 @@ function summaryText(){
   return lines.join("\n");
 }
 
-function render(){ renderSelect(); renderEvents(); renderSummary(); }
+function updateScrollCues(){
+  const w = $("#tableWrap"), box = $("#scrollBox"); if(!w || !box) return;
+  const can = w.scrollWidth > w.clientWidth + 2;
+  box.classList.toggle("can-scroll", can);
+  box.classList.toggle("more-right", can && w.scrollLeft + w.clientWidth < w.scrollWidth - 4);
+  if(can && w.scrollLeft > 20) $("#scrollHint").firstChild.textContent = "Swipe back and forth to see everyone ";
+}
+$("#tableWrap").addEventListener("scroll", updateScrollCues, { passive:true });
+window.addEventListener("resize", updateScrollCues);
+
+function render(){ renderSelect(); renderEvents(); renderSummary(); updateScrollCues(); }
 
 // ---------- events ----------
 $("#tab-rsvp").onclick = () => switchTab("rsvp");
@@ -393,6 +420,7 @@ function switchTab(t){
   $("#tab-summary").setAttribute("aria-selected", t==="summary");
   $("#view-rsvp").hidden = t!=="rsvp";
   $("#view-summary").hidden = t!=="summary";
+  if(t==="summary") updateScrollCues();
 }
 
 $("#familySelect").onchange = e => {
