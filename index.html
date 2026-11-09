@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notre Dame Vs. Boston College Weekend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0C2340; --navy-2:#143a66; --gold:#C99700; --gold-soft:#f6ecd0;
+    --bg:#f7f5f0; --card:#ffffff; --ink:#1b2430; --muted:#5f6b7a; --line:#e3ded3;
+    --yes:#1f7a4d; --yes-bg:#e3f4ea; --no:#b03a2e; --no-bg:#fbe7e4; --maybe:#9a6b00; --maybe-bg:#fff4d6;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+  a{color:var(--navy-2)}
+  header{background:var(--navy);color:#fff;padding:28px 20px 0}
+  .wrap{max-width:1040px;margin:0 auto}
+  header h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:clamp(26px,4vw,38px);margin:0 0 4px;letter-spacing:-.01em}
+  header h1 span{color:var(--gold)}
+  header p{margin:0 0 18px;color:#cfd8e6;font-size:15px}
+  .tabs{display:flex;gap:4px}
+  .tab{background:transparent;border:0;color:#cfd8e6;font:600 15px Inter,sans-serif;padding:12px 18px;border-radius:10px 10px 0 0;cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--bg);color:var(--navy)}
+  main{padding:22px 20px 60px}
+  .banner{background:var(--gold-soft);border:1px solid #ead9a6;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:16px;display:none}
+  .banner.show{display:block}
+
+  /* family bar */
+  .family-bar{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:18px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  select,input[type=text],input[type=number],textarea{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff;color:var(--ink)}
+  select:focus,input:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
+  select{min-width:220px}
+  .btn{font:600 14px Inter,sans-serif;border-radius:9px;border:1px solid var(--navy);background:var(--navy);color:#fff;padding:9px 14px;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--navy)}
+  .btn.danger{background:#fff;color:var(--no);border-color:#e4b9b3}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .spacer{flex:1}
+  .save-state{font-size:13px;color:var(--muted);min-height:18px}
+
+  .family-meta{display:grid;grid-template-columns:120px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:18px}
+  .family-meta textarea{min-height:44px;resize:vertical}
+  @media (max-width:600px){.family-meta{grid-template-columns:1fr}}
+
+  .day{margin:26px 0 10px;display:flex;align-items:baseline;gap:10px}
+  .day h2{font-family:Fraunces,Georgia,serif;font-size:24px;margin:0;color:var(--navy)}
+  .day small{color:var(--muted);font-size:14px}
+
+  .event{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;display:grid;grid-template-columns:118px 1fr;gap:6px 18px}
+  .time{font-weight:700;color:var(--navy);font-size:14px;padding-top:2px}
+  .event h3{margin:0 0 4px;font-size:17px}
+  .desc{margin:0 0 8px;color:var(--muted);font-size:14px}
+  .links{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .links a{font-size:13px;text-decoration:none;background:#eef2f8;color:var(--navy-2);padding:4px 10px;border-radius:999px;border:1px solid #dbe3ef}
+  .links a:hover{background:#e2e9f4}
+  .links a::after{content:" ↗";font-size:11px}
+  .rsvp{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .choice{font:600 14px Inter,sans-serif;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer}
+  .choice[data-v=yes][aria-pressed=true]{background:var(--yes-bg);border-color:var(--yes);color:var(--yes)}
+  .choice[data-v=no][aria-pressed=true]{background:var(--no-bg);border-color:var(--no);color:var(--no)}
+  .choice[data-v=maybe][aria-pressed=true]{background:var(--maybe-bg);border-color:var(--maybe);color:var(--maybe)}
+  .choice:disabled{cursor:default}
+  .event textarea{width:100%;min-height:40px;resize:vertical;font-size:14px}
+  @media (max-width:600px){.event{grid-template-columns:1fr}}
+
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:28px;text-align:center;color:var(--muted)}
+
+  /* summary */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .stat b{display:block;font-family:Fraunces,Georgia,serif;font-size:28px;color:var(--navy)}
+  .stat span{font-size:13px;color:var(--muted)}
+  .table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:22px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  thead th{background:#fbfaf6;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);position:sticky;top:0}
+  th.ev{min-width:190px}
+  td.cell{text-align:center;white-space:nowrap}
+  .pill{display:inline-block;min-width:30px;padding:2px 8px;border-radius:999px;font-weight:600;font-size:13px}
+  .pill.yes{background:var(--yes-bg);color:var(--yes)} .pill.no{background:var(--no-bg);color:var(--no)} .pill.maybe{background:var(--maybe-bg);color:var(--maybe)} .pill.none{color:#aab2bd}
+  .count{font-weight:600;white-space:nowrap}
+  .comments h3{font-family:Fraunces,Georgia,serif;color:var(--navy);margin:0 0 10px}
+  .cgroup{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+  .cgroup h4{margin:0 0 6px;font-size:15px}
+  .cgroup ul{margin:0;padding-left:18px;font-size:14px}
+  .cgroup li{margin:3px 0}
+  .muted{color:var(--muted)}
+
+  dialog{border:0;border-radius:var(--radius);padding:20px;max-width:380px;width:92%}
+  dialog::backdrop{background:rgba(12,35,64,.45)}
+  dialog h3{margin:0 0 12px;font-family:Fraunces,Georgia,serif;color:var(--navy)}
+  dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  footer{font-size:12px;color:var(--muted);margin-top:28px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Notre Dame Vs. Boston College Weekend</h1>
+    <p>Add yourself and let me know which things you are interested in seeing.</p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-rsvp" aria-selected="true">RSVP</button>
+      <button class="tab" role="tab" id="tab-summary" aria-selected="false">Who's coming</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner" class="banner"></div>
+
+  <!-- RSVP VIEW -->
+  <section id="view-rsvp">
+    <div class="family-bar">
+      <div class="field">
+        <label for="familySelect">Family / individual</label>
+        <select id="familySelect"><option value="">Loading…</option></select>
+      </div>
+      <button class="btn ghost" id="addFamilyBtn">+ Add family / individual</button>
+      <div class="spacer"></div>
+      <div class="save-state" id="saveState"></div>
+      <button class="btn danger" id="deleteFamilyBtn" hidden>Remove</button>
+    </div>
+
+    <div id="familyMeta" class="family-meta" hidden>
+      <div class="field">
+        <label for="peopleInput">How many people</label>
+        <input id="peopleInput" type="number" min="1" max="50" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="noteInput">General notes</label>
+        <textarea id="noteInput" placeholder="arriving at 6:00pm, have commitments at 3:00pm, etc"></textarea>
+      </div>
+    </div>
+
+    <div id="events"></div>
+  </section>
+
+  <!-- SUMMARY VIEW -->
+  <section id="view-summary" hidden>
+    <div class="stats" id="stats"></div>
+    <div class="table-wrap"><table id="summaryTable"></table></div>
+    <div class="comments" id="commentsList"></div>
+    <button class="btn ghost" id="copyBtn">Copy summary as text</button>
+    <span class="save-state" id="copyState"></span>
+  </section>
+
+</main>
+
+<dialog id="addDialog">
+  <form id="addForm" method="dialog">
+    <h3>Add a family / individual</h3>
+    <div class="field" style="margin-bottom:10px">
+      <label for="newName">Family or individual name</label>
+      <input id="newName" type="text" required maxlength="80" placeholder="e.g. The Smith Family or Jane Smith">
+    </div>
+    <div class="field">
+      <label for="newPeople">How many people</label>
+      <input id="newPeople" type="number" min="1" max="50" value="1">
+    </div>
+    <div class="row">
+      <button type="button" class="btn ghost" id="cancelAdd">Cancel</button>
+      <button type="submit" class="btn">Add</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delDialog">
+  <h3>Remove this entry?</h3>
+  <p id="delText" class="muted"></p>
+  <div class="row">
+    <button type="button" class="btn ghost" id="cancelDel">Cancel</button>
+    <button type="button" class="btn danger" id="confirmDel">Remove</button>
+  </div>
+</dialog>
+
+<script>
+const EVENTS = [
+  { id:"fri-dinner", day:"fri", time:"7:30", title:"Dinner (to be arranged)",
+    desc:"what time will you be getting dinner?",
+    links:[]},
+  { id:"fri-walk", day:"fri", time:"9:30-11:00", title:"Campus walk and nighttime Grotto trip",
+    desc:"",
+    links:[
+      ["The Grotto (Experience ND)","https://experience.nd.edu/explore/grotto-of-our-lady-of-lourdes/"]
+    ]},
+  { id:"fri-drum", day:"fri", time:"11:30 - 12:30", title:"Midnight drummer circle",
+    desc:"",
+    links:[
+      ["Midnight Drummers' Circle","https://experience.nd.edu/cheer/football-gameday/tailgating/midnight-drummers-circle/"]
+    ]},
+  { id:"sat-walk", day:"sat", time:"9:30 - 12:30", title:"Campus walk (Grotto, Basilica, Engineering buildings, Dorms, Touchdown Jesus, etc.)",
+    desc:"",
+    links:[]},
+  { id:"sat-lunch", day:"sat", time:"12:30 - 1:15", title:"Lunch (Dining hall, tailgates, steak sandwich sale)",
+    desc:"",
+    links:[
+      ["Knights of Columbus steak sandwiches","https://ndsmcobserver.com/2021/09/knights-of-columbus-host-famous-game-day-steak-sandwich-concession-stand"]
+    ]},
+  { id:"sat-playerwalk", day:"sat", time:"1:15-1:30", title:"Player walk",
+    desc:"watch the players up close walk from the church to the stadium",
+    links:[]},
+  { id:"sat-trumpets", day:"sat", time:"1:30-1:40", title:"Trumpets at the dome",
+    desc:"a quick trumpet performance right after the player walk",
+    links:[]},
+  { id:"sat-game", day:"sat", time:"1:40 - 3:30", title:"Game time",
+    desc:"",
+    links:[]},
+];
+const DAYS = { fri:["Friday","Nov 13"], sat:["Saturday","Nov 14"] };
+const LABEL = { yes:"Yes", no:"No", maybe:"Maybe" };
+
+// ---------- CONFIG: paste your Google Apps Script web app URL here ----------
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+// ---------- Google Sheet API ----------
+const configured = /^https:\/\/script\.google\.com\//.test(SCRIPT_URL);
+async function api(payload){
+  const opts = payload ? { method:"POST", body: JSON.stringify(payload) } : {};
+  const url = payload ? SCRIPT_URL : SCRIPT_URL + "?action=list&t=" + Date.now();
+  const res = await fetch(url, opts);            // text/plain body: no CORS preflight
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+// ---------- state ----------
+let db = false, families = [], selectedId = "", canWrite = true, pending = 0;
+let lastSelected = "";
+try { lastSelected = localStorage.getItem("nd-family") || ""; } catch(e){}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function banner(msg){ const b=$("#banner"); b.textContent=msg||""; b.classList.toggle("show",!!msg); }
+function saveState(msg){ $("#saveState").textContent = msg||""; }
+
+// ---------- per-doc write queue (one write at a time per document) ----------
+const queues = {};
+function enqueue(id, fn){
+  const prev = queues[id] || Promise.resolve();
+  const next = prev.catch(()=>{}).then(fn);
+  queues[id] = next;
+  return next;
+}
+function applyLocal(id, patch){
+  const f = families.find(x=>x.id===id); if(!f) return;
+  for(const [k,v] of Object.entries(patch)){
+    if(v && typeof v==="object") f[k] = Object.assign({}, f[k]||{}, v); else f[k] = v;
+  }
+}
+async function writeFamily(id, patch){
+  if(!db || !canWrite) return;
+  applyLocal(id, patch);
+  saveState("Saving…"); pending++;
+  try{
+    await enqueue(id, async () => {
+      try { await api({ action:"update", id, patch }); }
+      catch(e){ await new Promise(r=>setTimeout(r,600+Math.random()*800)); await api({ action:"update", id, patch }); }
+    });
+    saveState("Saved ✓");
+  }catch(e){ handleWriteError(e); }
+  finally{ pending--; }
+}
+function handleWriteError(e){ saveState("Couldn't save — check your connection and try again"); }
+
+// ---------- RSVP view ----------
+function renderSelect(){
+  const sel = $("#familySelect");
+  const opts = ['<option value="">— Choose your family or name —</option>']
+    .concat(families.map(f => `<option value="${esc(f.id)}"${f.id===selectedId?" selected":""}>${esc(f.name)}</option>`));
+  sel.innerHTML = opts.join("");
+  $("#addFamilyBtn").disabled = !canWrite || !db;
+}
+
+function currentFamily(){ return families.find(f=>f.id===selectedId); }
+
+function renderEvents(){
+  const fam = currentFamily();
+  const box = $("#events");
+  $("#familyMeta").hidden = !fam;
+  $("#deleteFamilyBtn").hidden = !fam || !canWrite;
+  if(fam){
+    const p=$("#peopleInput"), n=$("#noteInput");
+    if(document.activeElement!==p) p.value = fam.people || "";
+    if(document.activeElement!==n) n.value = fam.note || "";
+    p.disabled = n.disabled = !canWrite;
+  }
+  let html = "";
+  if(!fam){
+    html += `<div class="empty">${families.length ? "Choose your family or name above to fill in your RSVP — or browse the plan below." : (db ? "No one added yet. Click <b>+ Add family / individual</b> to start." : "Here's the plan for the weekend.")}</div>`;
+  }
+  let day = "";
+  for(const ev of EVENTS){
+    if(ev.day!==day){ day=ev.day; html += `<div class="day"><h2>${DAYS[day][0]}</h2><small>${DAYS[day][1]}</small></div>`; }
+    const v = fam?.rsvp?.[ev.id] || "";
+    const c = fam?.comments?.[ev.id] || "";
+    html += `<article class="event" data-ev="${ev.id}">
+      <div class="time">${esc(ev.time)}</div>
+      <div>
+        <h3>${esc(ev.title)}</h3>
+        ${ev.desc?`<p class="desc">${esc(ev.desc)}</p>`:""}
+        ${ev.links.length?`<div class="links">${ev.links.map(([t,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join("")}</div>`:""}
+        ${fam ? `
+        <div class="rsvp" role="group" aria-label="RSVP for ${esc(ev.title)}">
+          ${["yes","maybe","no"].map(k=>`<button class="choice" data-v="${k}" aria-pressed="${v===k}" ${canWrite?"":"disabled"}>${LABEL[k]}</button>`).join("")}
+        </div>
+        <textarea data-comment="${ev.id}" placeholder="Additional comments or concerns" ${canWrite?"":"disabled"}>${esc(c)}</textarea>` : ""}
+      </div>
+    </article>`;
+  }
+  // preserve focus on a comment box across re-render
+  const active = document.activeElement;
+  const focusedComment = active && active.dataset && active.dataset.comment;
+  if(focusedComment){
+    // don't blow away the textarea the user is typing in: update everything except it
+    box.querySelectorAll(".event").forEach(el=>{
+      const id = el.dataset.ev; const val = fam?.rsvp?.[id]||"";
+      el.querySelectorAll(".choice").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.v===val)));
+    });
+    return;
+  }
+  box.innerHTML = html;
+}
+
+// ---------- Summary view ----------
+function renderSummary(){
+  const fams = families;
+  const totalPeople = fams.reduce((s,f)=>s+(+f.people||0),0);
+  const responded = fams.filter(f=>f.rsvp && Object.keys(f.rsvp).length).length;
+  const headFor = (ev,k) => fams.filter(f=>f.rsvp?.[ev.id]===k).reduce((s,f)=>s+(+f.people||0),0);
+  $("#stats").innerHTML = `
+    <div class="stat"><b>${fams.length}</b><span>families / individuals</span></div>
+    <div class="stat"><b>${totalPeople}</b><span>people total</span></div>
+    <div class="stat"><b>${responded}/${fams.length}</b><span>responded</span></div>
+    <div class="stat"><b>${headFor(EVENTS.find(e=>e.id==="sat-game"),"yes")}</b><span>people at the game</span></div>`;
+
+  if(!fams.length){
+    $("#summaryTable").innerHTML = `<tbody><tr><td class="muted">No one added yet.</td></tr></tbody>`;
+    $("#commentsList").innerHTML = ""; return;
+  }
+  let t = `<thead><tr><th class="ev">Event</th><th>Going (people)</th>${fams.map(f=>`<th>${esc(f.name)}<br><span class="muted" style="text-transform:none;letter-spacing:0">${+f.people||"?"} ppl</span></th>`).join("")}</tr></thead><tbody>`;
+  for(const ev of EVENTS){
+    const y=headFor(ev,"yes"), m=headFor(ev,"maybe");
+    t += `<tr><td><b>${esc(ev.title)}</b><br><span class="muted">${DAYS[ev.day][0].slice(0,3)} ${esc(ev.time)}</span></td>
+      <td class="count">${y}${m?` <span class="muted">(+${m} maybe)</span>`:""}</td>
+      ${fams.map(f=>{const v=f.rsvp?.[ev.id]; return `<td class="cell">${v?`<span class="pill ${v}">${LABEL[v]}</span>`:`<span class="pill none">—</span>`}</td>`;}).join("")}</tr>`;
+  }
+  $("#summaryTable").innerHTML = t + "</tbody>";
+
+  let c = `<h3>Comments</h3>`;
+  const general = fams.filter(f=>f.note && f.note.trim());
+  if(general.length) c += `<div class="cgroup"><h4>General notes</h4><ul>${general.map(f=>`<li><b>${esc(f.name)}:</b> ${esc(f.note)}</li>`).join("")}</ul></div>`;
+  let any = general.length>0;
+  for(const ev of EVENTS){
+    const list = fams.filter(f=>f.comments?.[ev.id]?.trim());
+    if(!list.length) continue; any = true;
+    c += `<div class="cgroup"><h4>${esc(ev.title)}</h4><ul>${list.map(f=>`<li><b>${esc(f.name)}:</b> ${esc(f.comments[ev.id])}</li>`).join("")}</ul></div>`;
+  }
+  if(!any) c += `<p class="muted">No comments yet.</p>`;
+  $("#commentsList").innerHTML = c;
+}
+
+function summaryText(){
+  const lines = ["NOTRE DAME WEEKEND — RSVP SUMMARY",""];
+  for(const ev of EVENTS){
+    lines.push(`${DAYS[ev.day][0]} ${ev.time} — ${ev.title}`);
+    for(const k of ["yes","maybe","no"]){
+      const fs = families.filter(f=>f.rsvp?.[ev.id]===k);
+      if(fs.length) lines.push(`  ${LABEL[k]}: ${fs.map(f=>`${f.name} (${+f.people||"?"})`).join(", ")}`);
+    }
+    const none = families.filter(f=>!f.rsvp?.[ev.id]);
+    if(none.length) lines.push(`  No answer: ${none.map(f=>f.name).join(", ")}`);
+    families.filter(f=>f.comments?.[ev.id]?.trim()).forEach(f=>lines.push(`  • ${f.name}: ${f.comments[ev.id]}`));
+    lines.push("");
+  }
+  const notes = families.filter(f=>f.note?.trim());
+  if(notes.length){ lines.push("General notes:"); notes.forEach(f=>lines.push(`  • ${f.name}: ${f.note}`)); }
+  return lines.join("\n");
+}
+
+function render(){ renderSelect(); renderEvents(); renderSummary(); }
+
+// ---------- events ----------
+$("#tab-rsvp").onclick = () => switchTab("rsvp");
+$("#tab-summary").onclick = () => switchTab("summary");
+function switchTab(t){
+  $("#tab-rsvp").setAttribute("aria-selected", t==="rsvp");
+  $("#tab-summary").setAttribute("aria-selected", t==="summary");
+  $("#view-rsvp").hidden = t!=="rsvp";
+  $("#view-summary").hidden = t!=="summary";
+}
+
+$("#familySelect").onchange = e => {
+  selectedId = e.target.value; saveState("");
+  try { localStorage.setItem("nd-family", selectedId); } catch(_){}
+  renderEvents();
+};
+
+$("#events").addEventListener("click", e => {
+  const b = e.target.closest(".choice"); if(!b || b.disabled) return;
+  const fam = currentFamily(); if(!fam) return;
+  const id = b.closest(".event").dataset.ev;
+  const cur = fam.rsvp?.[id];
+  const val = cur===b.dataset.v ? null : b.dataset.v;   // click again to clear
+  b.parentElement.querySelectorAll(".choice").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.v===val)));
+  writeFamily(fam.id, { rsvp: { [id]: val===null ? "" : val }, updatedAt: new Date().toISOString() });
+});
+
+// comments: save after typing pauses, and on blur
+const commentTimers = {};
+$("#events").addEventListener("input", e => {
+  const ta = e.target.closest("textarea[data-comment]"); if(!ta) return;
+  const fam = currentFamily(); if(!fam) return;
+  const id = ta.dataset.comment; saveState("Typing…");
+  clearTimeout(commentTimers[id]);
+  commentTimers[id] = setTimeout(()=>saveComment(fam.id, id, ta.value), 900);
+});
+$("#events").addEventListener("focusout", e => {
+  const ta = e.target.closest("textarea[data-comment]"); if(!ta) return;
+  const fam = currentFamily(); if(!fam) return;
+  const id = ta.dataset.comment;
+  if(commentTimers[id]){ clearTimeout(commentTimers[id]); commentTimers[id]=null; saveComment(fam.id, id, ta.value); }
+});
+function saveComment(famId, evId, value){
+  commentTimers[evId]=null;
+  const fam = families.find(f=>f.id===famId);
+  if(fam && (fam.comments?.[evId]||"")===value){ saveState("Saved ✓"); return; }
+  writeFamily(famId, { comments: { [evId]: value.slice(0,1000) }, updatedAt: new Date().toISOString() });
+}
+
+let metaTimer=null;
+function queueMeta(){
+  const fam = currentFamily(); if(!fam) return;
+  clearTimeout(metaTimer); saveState("Typing…");
+  metaTimer = setTimeout(()=>{
+    metaTimer=null;
+    const people = Math.max(0, Math.min(50, parseInt($("#peopleInput").value,10)||0));
+    const note = $("#noteInput").value.slice(0,2000);
+    if((+fam.people||0)===people && (fam.note||"")===note){ saveState("Saved ✓"); return; }
+    writeFamily(fam.id, { people, note, updatedAt:new Date().toISOString() });
+  }, 900);
+}
+$("#peopleInput").addEventListener("input", queueMeta);
+$("#noteInput").addEventListener("input", queueMeta);
+
+// add family
+$("#addFamilyBtn").onclick = () => { $("#newName").value=""; $("#newPeople").value="1"; $("#addDialog").showModal(); $("#newName").focus(); };
+$("#cancelAdd").onclick = () => $("#addDialog").close();
+$("#addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("#newName").value.trim().slice(0,80); if(!name) return;
+  const people = Math.max(1, Math.min(50, parseInt($("#newPeople").value,10)||1));
+  $("#addDialog").close();
+  try{
+    saveState("Adding…");
+    pending++;
+    let res; try { res = await api({ action:"add", name, people }); } finally { pending--; }
+    families.push(res.entry);
+    families.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+    selectedId = res.entry.id;
+    try { localStorage.setItem("nd-family", selectedId); } catch(_){}
+    saveState("Added ✓"); render();
+  }catch(err){ handleWriteError(err); }
+});
+
+// delete family
+$("#deleteFamilyBtn").onclick = () => { const f=currentFamily(); if(!f) return; $("#delText").textContent = `${f.name} and all their answers will be removed for everyone.`; $("#delDialog").showModal(); };
+$("#cancelDel").onclick = () => $("#delDialog").close();
+$("#confirmDel").onclick = async () => {
+  const f=currentFamily(); $("#delDialog").close(); if(!f) return;
+  pending++;
+  try{ await enqueue(f.id, ()=>api({ action:"delete", id:f.id })); families = families.filter(x=>x.id!==f.id); selectedId=""; saveState("Removed"); render(); }
+  catch(err){ handleWriteError(err); }
+  finally{ pending--; }
+};
+
+$("#copyBtn").onclick = async () => {
+  try{ await navigator.clipboard.writeText(summaryText()); $("#copyState").textContent=" Copied ✓"; }
+  catch(e){ $("#copyState").textContent=" Couldn't copy — select the table instead."; }
+};
+
+// ---------- boot ----------
+render();
+async function refresh(){
+  if(pending>0) return;                       // don't overwrite in-flight edits
+  try{
+    const data = await api();
+    if(pending>0) return;
+    families = (data.entries||[]).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+    if(!selectedId && lastSelected && families.some(f=>f.id===lastSelected)) selectedId = lastSelected;
+    if(selectedId && !families.some(f=>f.id===selectedId)) selectedId = "";
+    if($("#banner").textContent.startsWith("Couldn't load")) banner("");
+    db = true; render();
+  }catch(e){
+    if(!db) banner("Couldn't load responses right now. Reload the page to try again.");
+  }
+}
+(async () => {
+  if(!configured){
+    canWrite=false;
+    banner("Setup needed: paste your Google Apps Script URL into SCRIPT_URL in index.html.");
+    $("#familySelect").innerHTML='<option value="">Not connected yet</option>';
+    render(); return;
+  }
+  $("#familySelect").innerHTML='<option value="">Loading…</option>';
+  await refresh();
+  setInterval(refresh, 20000);                 // pick up other people's answers
+  document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refresh(); });
+})();
+</script>
+</body>
+</html>
