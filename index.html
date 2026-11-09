@@ -158,7 +158,6 @@
   <section id="view-summary" hidden>
     <div class="stats" id="stats"></div>
     <div class="scroll-box" id="scrollBox">
-      <div class="scroll-hint" id="scrollHint">Swipe sideways to see everyone <span class="arrow">→</span></div>
       <div class="fade-wrap"><div class="table-wrap" id="tableWrap"><table id="summaryTable"></table></div></div>
     </div>
     <div class="comments" id="commentsList"></div>
@@ -405,7 +404,6 @@ function updateScrollCues(){
   const can = w.scrollWidth > w.clientWidth + 2;
   box.classList.toggle("can-scroll", can);
   box.classList.toggle("more-right", can && w.scrollLeft + w.clientWidth < w.scrollWidth - 4);
-  if(can && w.scrollLeft > 20) $("#scrollHint").firstChild.textContent = "Swipe back and forth to see everyone ";
 }
 $("#tableWrap").addEventListener("scroll", updateScrollCues, { passive:true });
 window.addEventListener("resize", updateScrollCues);
