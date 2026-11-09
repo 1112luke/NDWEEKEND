@@ -207,12 +207,13 @@ const EVENTS = [
   { id:"sat-trumpets", day:"sat", time:"1:30-1:40", title:"Trumpets at the dome",
     desc:"a quick trumpet performance right after the player walk",
     links:[]},
-  { id:"sat-game", day:"sat", time:"1:40 - 3:30", title:"Game time",
+  { id:"sat-game", day:"sat", time:"1:40 - 3:30", title:"Game time", info:true,
     desc:"",
     links:[]},
 ];
 const DAYS = { fri:["Friday","Nov 13"], sat:["Saturday","Nov 14"] };
 const LABEL = { yes:"Yes", no:"No", maybe:"Maybe" };
+const RSVP_EVENTS = EVENTS.filter(e=>!e.info);   // events people answer
 
 // ---------- CONFIG: paste your Google Apps Script web app URL here ----------
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_MEgP-c7R9Kn1hawHp2mm2FRlnAicl_rwUlW0RK4OvVTMTTFqGAUjedPHQ9Vo5eC0sQ/exec";
@@ -305,7 +306,7 @@ function renderEvents(){
         <h3>${esc(ev.title)}</h3>
         ${ev.desc?`<p class="desc">${esc(ev.desc)}</p>`:""}
         ${ev.links.length?`<div class="links">${ev.links.map(([t,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join("")}</div>`:""}
-        ${fam ? `
+        ${fam && !ev.info ? `
         <div class="rsvp" role="group" aria-label="RSVP for ${esc(ev.title)}">
           ${["yes","maybe","no"].map(k=>`<button class="choice" data-v="${k}" aria-pressed="${v===k}" ${canWrite?"":"disabled"}>${LABEL[k]}</button>`).join("")}
         </div>
@@ -336,15 +337,14 @@ function renderSummary(){
   $("#stats").innerHTML = `
     <div class="stat"><b>${fams.length}</b><span>families / individuals</span></div>
     <div class="stat"><b>${totalPeople}</b><span>people total</span></div>
-    <div class="stat"><b>${responded}/${fams.length}</b><span>responded</span></div>
-    <div class="stat"><b>${headFor(EVENTS.find(e=>e.id==="sat-game"),"yes")}</b><span>people at the game</span></div>`;
+    <div class="stat"><b>${responded}/${fams.length}</b><span>responded</span></div>`;
 
   if(!fams.length){
     $("#summaryTable").innerHTML = `<tbody><tr><td class="muted">No one added yet.</td></tr></tbody>`;
     $("#commentsList").innerHTML = ""; return;
   }
   let t = `<thead><tr><th class="ev">Event</th><th>Going (people)</th>${fams.map(f=>`<th>${esc(f.name)}<br><span class="muted" style="text-transform:none;letter-spacing:0">${+f.people||"?"} ppl</span></th>`).join("")}</tr></thead><tbody>`;
-  for(const ev of EVENTS){
+  for(const ev of RSVP_EVENTS){
     const y=headFor(ev,"yes"), m=headFor(ev,"maybe");
     t += `<tr><td><b>${esc(ev.title)}</b><br><span class="muted">${DAYS[ev.day][0].slice(0,3)} ${esc(ev.time)}</span></td>
       <td class="count">${y}${m?` <span class="muted">(+${m} maybe)</span>`:""}</td>
@@ -356,7 +356,7 @@ function renderSummary(){
   const general = fams.filter(f=>f.note && f.note.trim());
   if(general.length) c += `<div class="cgroup"><h4>General notes</h4><ul>${general.map(f=>`<li><b>${esc(f.name)}:</b> ${esc(f.note)}</li>`).join("")}</ul></div>`;
   let any = general.length>0;
-  for(const ev of EVENTS){
+  for(const ev of RSVP_EVENTS){
     const list = fams.filter(f=>f.comments?.[ev.id]?.trim());
     if(!list.length) continue; any = true;
     c += `<div class="cgroup"><h4>${esc(ev.title)}</h4><ul>${list.map(f=>`<li><b>${esc(f.name)}:</b> ${esc(f.comments[ev.id])}</li>`).join("")}</ul></div>`;
@@ -367,7 +367,7 @@ function renderSummary(){
 
 function summaryText(){
   const lines = ["NOTRE DAME WEEKEND — RSVP SUMMARY",""];
-  for(const ev of EVENTS){
+  for(const ev of RSVP_EVENTS){
     lines.push(`${DAYS[ev.day][0]} ${ev.time} — ${ev.title}`);
     for(const k of ["yes","maybe","no"]){
       const fs = families.filter(f=>f.rsvp?.[ev.id]===k);
